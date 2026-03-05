@@ -7,7 +7,7 @@ import os
 
 app = FastAPI()
 
-# Allow CORS
+# CORS allow
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,13 +15,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rectangle for text
+# Text rectangle
 TEXT_AREA = {
     "x": 220,
-    "y": 1060,    # adjust if needed
+    "y": 1060,
     "width": 715,
     "height": 75
 }
+
+# Fine-tune shift
+VERTICAL_SHIFT_UP = 10  # smaller = lower text, bigger = higher
+HORIZONTAL_SHIFT = 5    # positive = move right, negative = move left
 
 @app.get("/")
 def home():
@@ -58,12 +62,11 @@ async def generate(guild_name: str = Query(...)):
             font_size -= 2
             font = ImageFont.truetype(font_path, font_size)
 
-        # Horizontal center
-        x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2
+        # Horizontal center + fine-tune right shift
+        x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align in rectangle, then shift UP to appear above UID
-        vertical_shift_up = 20  # tweak this to adjust how high above UID
-        y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - vertical_shift_up
+        # Vertical: bottom align in rectangle, then shift UP slightly
+        y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
         outline_range = 3
