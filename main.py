@@ -21,7 +21,7 @@ TEXT_AREA = {"x": 220, "y": 1060, "width": 715, "height": 75}
 async def generate(guild_name: str = Query(...)):
     try:
         # Stable background image (replace URL if needed)
-        img_url = "https://raw.githubusercontent.com/SarimTestAssets/images/main/background.png"
+        img_url = "https://cdn.designfast.io/image/2026-03-05/8bb255db-96bc-4566-bdf4-d83815067a96.jpeg"
         resp = requests.get(img_url)
         resp.raise_for_status()
         img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
