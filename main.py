@@ -15,17 +15,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Text rectangle (reference)
+# Text rectangle reference
 TEXT_AREA = {
     "x": 220,
     "y": 1060,
     "width": 715,
-    "height": 75
+    "height": 75  # rectangle height for reference
 }
 
 # Shifts
 VERTICAL_SHIFT_UP = -380   # 10 cm below
 HORIZONTAL_SHIFT = 150     # 4 cm right
+TARGET_TEXT_HEIGHT = 90    # pixels
 
 @app.get("/")
 def home():
@@ -47,24 +48,25 @@ async def generate(guild_name: str = Query(...)):
         if not os.path.exists(font_path):
             return {"error": "Font file not found."}
 
-        font_size = 90
+        # Start with large font and shrink to match TARGET_TEXT_HEIGHT
+        font_size = 300  # start big
         font = ImageFont.truetype(font_path, font_size)
-        max_height = TEXT_AREA["height"]
 
-        # Auto shrink if too tall
+        # Shrink font until text height ≈ TARGET_TEXT_HEIGHT
         while True:
             bbox = draw.textbbox((0, 0), guild_name, font=font)
-            text_width = bbox[2] - bbox[0]
             text_height = bbox[3] - bbox[1]
-            if text_height <= max_height or font_size <= 15:
+            if text_height <= TARGET_TEXT_HEIGHT:
                 break
             font_size -= 2
             font = ImageFont.truetype(font_path, font_size)
 
-        # Horizontal center + 4cm right
+        text_width = draw.textlength(guild_name, font=font)
+
+        # Horizontal center + 4 cm right
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align + 10cm below
+        # Vertical: bottom align + 10 cm below
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
