@@ -46,9 +46,10 @@ async def generate(guild_name: str = Query(...), guild_id: str = Query(...)):
                 break
             font_size -= 1
 
-        # Center text in rectangle
-        x = BLANK_AREA["x"] + (BLANK_AREA["width"] - text_width)//2
-        y = BLANK_AREA["y"] + (BLANK_AREA["height"] - text_height)//2
+        # Center text in rectangle with vertical adjustment
+vertical_shift = 15  # adjust this number
+x = BLANK_AREA["x"] + (BLANK_AREA["width"] - text_width)//2
+y = BLANK_AREA["y"] + (BLANK_AREA["height"] - text_height)//2 + vertical_shift
 
         # Outline
         outline_range = 3
