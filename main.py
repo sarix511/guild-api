@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, ImageDraw, ImageFont
-import requests, io
+import requests, io, os
 
 app = FastAPI()
 
@@ -14,32 +14,31 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Rectangle for text
+# Text rectangle
 TEXT_AREA = {"x": 220, "y": 1060, "width": 715, "height": 75}
 
 @app.get("/generate")
 async def generate(guild_name: str = Query(...)):
     try:
-        # Background image
-        img_url = "https://cdn.designfast.io/image/2026-03-05/8bb255db-96bc-4566-bdf4-d83815067a96.jpeg"
+        # Stable background image (PNG/JPEG)
+        img_url = "https://i.postimg.cc/8bb255db/8bb255db-96bc-4566-bdf4-d83815067a96.jpeg"
         resp = requests.get(img_url)
         resp.raise_for_status()
         img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
         draw = ImageDraw.Draw(img)
 
-        # Load Google Font Roboto
+        # Load local font from fonts folder
         font_size = 70
-        font_url = "https://github.com/google/fonts/raw/main/apache/roboto/Roboto-Regular.ttf"
-        font_resp = requests.get(font_url)
-        font = ImageFont.truetype(io.BytesIO(font_resp.content), font_size)
+        font_path = "fonts/Roboto-Regular.ttf"  # Place this font in /fonts
+        font = ImageFont.truetype(font_path, font_size)
 
-        # Auto-shrink font to fit rectangle height
+        # Auto-shrink font if it exceeds rectangle height
         max_height = TEXT_AREA["height"]
         bbox = draw.textbbox((0,0), guild_name, font=font)
         text_height = bbox[3] - bbox[1]
         while text_height > max_height and font_size > 10:
             font_size -= 2
-            font = ImageFont.truetype(io.BytesIO(font_resp.content), font_size)
+            font = ImageFont.truetype(font_path, font_size)
             bbox = draw.textbbox((0,0), guild_name, font=font)
             text_height = bbox[3] - bbox[1]
 
@@ -58,7 +57,7 @@ async def generate(guild_name: str = Query(...)):
         # White text
         draw.text((x, y), guild_name, font=font, fill="white")
 
-        # Return as PNG
+        # Return PNG
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
         img_bytes.seek(0)
