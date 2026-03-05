@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 # Rectangle for text
-TEXT_AREA = {"x": 260, "y": 930, "width": 1280, "height": 137}
+TEXT_AREA = {"x": 220, "y": 1060, "width": 715, "height": 75}
 
 @app.get("/generate")
 async def generate(guild_name: str = Query(...)):
@@ -27,9 +27,9 @@ async def generate(guild_name: str = Query(...)):
         img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
         draw = ImageDraw.Draw(img)
 
-        # Font fixed 70
+        # Fixed large font size 70
         font_size = 70
-        font_path = "fonts/arial.ttf"  # Folder required
+        font_path = "fonts/arial.ttf"  # folder required
         try:
             font = ImageFont.truetype(font_path, font_size)
         except:
@@ -40,9 +40,9 @@ async def generate(guild_name: str = Query(...)):
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
-        # Center text inside rectangle
+        # Horizontal center + bottom-aligned
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width)//2
-        y = TEXT_AREA["y"] + (TEXT_AREA["height"] - text_height)//2
+        y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height  # bottom-aligned in rectangle
 
         # Outline
         outline_range = 3
