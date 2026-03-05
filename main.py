@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Text rectangle
+# Text rectangle (for alignment)
 TEXT_AREA = {
     "x": 220,
     "y": 1060,
@@ -24,8 +24,8 @@ TEXT_AREA = {
 }
 
 # Fine-tune shifts
-VERTICAL_SHIFT_UP = -37   # 1 thumb downward (negative = lower in image)
-HORIZONTAL_SHIFT = 150    # 4cm right (~150 pixels)
+VERTICAL_SHIFT_UP = -37   # 1 thumb downward
+HORIZONTAL_SHIFT = 150    # 4cm right
 
 @app.get("/")
 def home():
@@ -42,18 +42,18 @@ async def generate(guild_name: str = Query(...)):
         image = Image.open(image_path).convert("RGBA")
         draw = ImageDraw.Draw(image)
 
-        # Load font
+        # Load local font
         font_path = os.path.join(os.path.dirname(__file__), "fonts", "Roboto-Regular.ttf")
         if not os.path.exists(font_path):
             return {"error": "Font file not found."}
 
-        font_size = 75
+        font_size = 80
         font = ImageFont.truetype(font_path, font_size)
         max_height = TEXT_AREA["height"]
 
-        # Auto shrink font if too tall
+        # Auto-shrink font if too tall
         while True:
-            bbox = draw.textbbox((0,0), guild_name, font=font)
+            bbox = draw.textbbox((0, 0), guild_name, font=font)
             text_width = bbox[2] - bbox[0]
             text_height = bbox[3] - bbox[1]
 
@@ -62,7 +62,7 @@ async def generate(guild_name: str = Query(...)):
             font_size -= 2
             font = ImageFont.truetype(font_path, font_size)
 
-        # Horizontal center + right shift
+        # Horizontal center + 4cm right shift
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
         # Vertical: bottom align + 1 thumb downward
@@ -70,8 +70,8 @@ async def generate(guild_name: str = Query(...)):
 
         # Draw outline
         outline_range = 3
-        for ox in range(-outline_range, outline_range+1):
-            for oy in range(-outline_range, outline_range+1):
+        for ox in range(-outline_range, outline_range + 1):
+            for oy in range(-outline_range, outline_range + 1):
                 draw.text((x + ox, y + oy), guild_name, font=font, fill="black")
 
         # Draw main text
