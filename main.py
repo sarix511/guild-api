@@ -7,7 +7,7 @@ import os
 
 app = FastAPI()
 
-# CORS allow
+# Allow CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,10 +15,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Text rectangle
+# Rectangle for text
 TEXT_AREA = {
     "x": 220,
-    "y": 1060,
+    "y": 1060,    # adjust if needed
     "width": 715,
     "height": 75
 }
@@ -30,7 +30,7 @@ def home():
 @app.get("/generate")
 async def generate(guild_name: str = Query(...)):
     try:
-        # Load local background image
+        # Load local background
         image_path = os.path.join(os.path.dirname(__file__), "background.jpg")
         if not os.path.exists(image_path):
             return {"error": "Background image not found."}
@@ -47,33 +47,34 @@ async def generate(guild_name: str = Query(...)):
         font = ImageFont.truetype(font_path, font_size)
         max_height = TEXT_AREA["height"]
 
-        # Auto shrink if text too tall
+        # Auto shrink font if too tall
         while True:
-            bbox = draw.textbbox((0, 0), guild_name, font=font)
+            bbox = draw.textbbox((0,0), guild_name, font=font)
             text_width = bbox[2] - bbox[0]
             text_height = bbox[3] - bbox[1]
 
             if text_height <= max_height or font_size <= 15:
                 break
-
             font_size -= 2
             font = ImageFont.truetype(font_path, font_size)
 
-        # Center horizontally
+        # Horizontal center
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2
-        # Bottom align vertically
-        y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height
+
+        # Vertical: bottom align in rectangle, then shift UP to appear above UID
+        vertical_shift_up = 20  # tweak this to adjust how high above UID
+        y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - vertical_shift_up
 
         # Draw outline
         outline_range = 3
-        for ox in range(-outline_range, outline_range + 1):
-            for oy in range(-outline_range, outline_range + 1):
+        for ox in range(-outline_range, outline_range+1):
+            for oy in range(-outline_range, outline_range+1):
                 draw.text((x + ox, y + oy), guild_name, font=font, fill="black")
 
         # Draw main text
         draw.text((x, y), guild_name, font=font, fill="white")
 
-        # Return PNG
+        # Return image
         img_bytes = io.BytesIO()
         image.save(img_bytes, format="PNG")
         img_bytes.seek(0)
