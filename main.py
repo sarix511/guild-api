@@ -4,10 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import io
+import os
 
 app = FastAPI()
 
-# Allow all origins (safe for image API)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,8 +15,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Background image (your provided image)
-BACKGROUND_URL = "https://cdn.designfast.io/image/2026-03-05/8bb255db-96bc-4566-bdf4-d83815067a96.jpeg"
+# Background Image (Postimg)
+BACKGROUND_URL = "https://i.postimg.cc/j2wKc17D/background.jpg"
 
 # Text rectangle
 TEXT_AREA = {
@@ -26,24 +26,49 @@ TEXT_AREA = {
     "height": 75
 }
 
+@app.get("/")
+def home():
+    return {"status": "API is running"}
+
 @app.get("/generate")
 async def generate(guild_name: str = Query(...)):
     try:
-        # Download background image
-        response = requests.get(BACKGROUND_URL)
+        # Download image safely
+        response = requests.get(
+            BACKGROUND_URL,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
         response.raise_for_status()
 
-        image = Image.open(io.BytesIO(response.content)).convert("RGBA")
+        # Verify image before opening
+        image_bytes = io.BytesIO(response.content)
+        try:
+            image = Image.open(image_bytes)
+            image.verify()
+        except:
+            return {"error": "Invalid image format from host."}
+
+        # Reopen image after verify
+        image_bytes.seek(0)
+        image = Image.open(image_bytes).convert("RGBA")
         draw = ImageDraw.Draw(image)
 
-        # Load local font
-        font_path = "fonts/Roboto-Regular.ttf"
+        # Load font (absolute path)
+        font_path = os.path.join(
+            os.path.dirname(__file__),
+            "fonts",
+            "Roboto-Regular.ttf"
+        )
+
+        if not os.path.exists(font_path):
+            return {"error": "Font file not found."}
+
         font_size = 70
         font = ImageFont.truetype(font_path, font_size)
 
-        # Auto shrink if text height exceeds rectangle height
         max_height = TEXT_AREA["height"]
 
+        # Auto shrink if needed
         while True:
             bbox = draw.textbbox((0, 0), guild_name, font=font)
             text_width = bbox[2] - bbox[0]
@@ -58,19 +83,19 @@ async def generate(guild_name: str = Query(...)):
         # Center horizontally
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2
 
-        # Bottom align vertically
+        # Bottom align
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height
 
-        # Draw outline
+        # Outline
         outline_range = 3
         for ox in range(-outline_range, outline_range + 1):
             for oy in range(-outline_range, outline_range + 1):
                 draw.text((x + ox, y + oy), guild_name, font=font, fill="black")
 
-        # Draw main white text
+        # White text
         draw.text((x, y), guild_name, font=font, fill="white")
 
-        # Return image
+        # Return PNG
         img_bytes = io.BytesIO()
         image.save(img_bytes, format="PNG")
         img_bytes.seek(0)
