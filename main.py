@@ -2,10 +2,11 @@ from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, ImageDraw, ImageFont
-import requests, io, base64
+import requests, io
 
 app = FastAPI()
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,21 +14,8 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Rectangle for guild name
-BLANK_AREA = {"x": 260, "y": 930, "width": 650, "height": 80}
-
-# Base64-encoded font (Arial example) – replace with actual base64 of arial.ttf
-FONT_B64 = """
-AAEAAAASAQAABAAgR0RFRrRCsIIAA...
-"""  # Truncated, use full base64 of arial.ttf
-
-def get_font(size: int):
-    try:
-        font_bytes = io.BytesIO(base64.b64decode(FONT_B64))
-        font = ImageFont.truetype(font_bytes, size)
-    except:
-        font = ImageFont.load_default()
-    return font
+# Rectangle for text
+TEXT_AREA = {"x": 260, "y": 930, "width": 1280, "height": 137}
 
 @app.get("/generate")
 async def generate(guild_name: str = Query(...)):
@@ -39,18 +27,22 @@ async def generate(guild_name: str = Query(...)):
         img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
         draw = ImageDraw.Draw(img)
 
-        # Fixed font size
+        # Font fixed 70
         font_size = 70
-        font = get_font(font_size)
+        font_path = "fonts/arial.ttf"  # Folder required
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+        except:
+            font = ImageFont.load_default()
 
         # Text size
         bbox = draw.textbbox((0,0), guild_name, font=font)
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
-        # Center in rectangle
-        x = BLANK_AREA["x"] + (BLANK_AREA["width"] - text_width)//2
-        y = BLANK_AREA["y"] + (BLANK_AREA["height"] - text_height)//2
+        # Center text inside rectangle
+        x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width)//2
+        y = TEXT_AREA["y"] + (TEXT_AREA["height"] - text_height)//2
 
         # Outline
         outline_range = 3
