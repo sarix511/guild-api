@@ -20,13 +20,13 @@ TEXT_AREA = {
     "x": 220,
     "y": 1060,
     "width": 715,
-    "height": 75  # rectangle height for reference
+    "height": 75
 }
 
 # Shifts
-VERTICAL_SHIFT_UP = -380   # 10 cm below
-HORIZONTAL_SHIFT = 150     # 4 cm right
-TARGET_TEXT_HEIGHT = 90    # pixels
+VERTICAL_SHIFT_UP = -380    # 10 cm below
+HORIZONTAL_SHIFT = 226      # 6 cm right (4cm + 2cm)
+TARGET_TEXT_HEIGHT = 90     # pixels
 
 @app.get("/")
 def home():
@@ -49,7 +49,7 @@ async def generate(guild_name: str = Query(...)):
             return {"error": "Font file not found."}
 
         # Start with large font and shrink to match TARGET_TEXT_HEIGHT
-        font_size = 300  # start big
+        font_size = 300
         font = ImageFont.truetype(font_path, font_size)
 
         # Shrink font until text height ≈ TARGET_TEXT_HEIGHT
@@ -63,7 +63,7 @@ async def generate(guild_name: str = Query(...)):
 
         text_width = draw.textlength(guild_name, font=font)
 
-        # Horizontal center + 4 cm right
+        # Horizontal center + 6 cm right
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
         # Vertical: bottom align + 10 cm below
