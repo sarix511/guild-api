@@ -10,6 +10,10 @@
     {
       "src": "/generate",
       "dest": "main.py"
+    },
+    {
+      "src": "/",
+      "dest": "main.py"
     }
   ]
 }
