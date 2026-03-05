@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Text rectangle (for alignment)
+# Text rectangle (for alignment reference)
 TEXT_AREA = {
     "x": 220,
     "y": 1060,
@@ -24,8 +24,8 @@ TEXT_AREA = {
 }
 
 # Fine-tune shifts
-VERTICAL_SHIFT_UP = -37   # 1 thumb downward
-HORIZONTAL_SHIFT = 150    # 4cm right
+VERTICAL_SHIFT_UP = -380   # 10 cm below
+HORIZONTAL_SHIFT = 150     # 4 cm right
 
 @app.get("/")
 def home():
@@ -51,7 +51,7 @@ async def generate(guild_name: str = Query(...)):
         font = ImageFont.truetype(font_path, font_size)
         max_height = TEXT_AREA["height"]
 
-        # Auto-shrink font if too tall
+        # Auto shrink font if too tall
         while True:
             bbox = draw.textbbox((0, 0), guild_name, font=font)
             text_width = bbox[2] - bbox[0]
@@ -62,10 +62,10 @@ async def generate(guild_name: str = Query(...)):
             font_size -= 2
             font = ImageFont.truetype(font_path, font_size)
 
-        # Horizontal center + 4cm right shift
+        # Horizontal center + 4 cm right shift
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align + 1 thumb downward
+        # Vertical: bottom align + 10 cm below
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
