@@ -6,7 +6,7 @@ import requests, io
 
 app = FastAPI()
 
-# CORS
+# Allow all origins for browser / JS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 @app.get("/generate")
-async def generate(guild_name: str = Query(...)):
+async def generate(guild_name: str = Query(...), guild_id: str = Query(...)):
     try:
         # Background image
         img_url = "https://cdn.designfast.io/image/2026-03-05/8bb255db-96bc-4566-bdf4-d83815067a96.jpeg"
@@ -25,45 +25,19 @@ async def generate(guild_name: str = Query(...)):
         draw = ImageDraw.Draw(img)
 
         # Font
+        font_size = 70  # Fixed large size
         font_path = "fonts/arial.ttf"
-        font_size = 10
-        max_width = img.width - 100
-
         try:
             font = ImageFont.truetype(font_path, font_size)
         except:
             font = ImageFont.load_default()
 
-        # Dynamic font size using draw.textbbox
-        max_font_size = 250
-        while True:
-            if isinstance(font, ImageFont.FreeTypeFont):
-                bbox = draw.textbbox((0,0), guild_name, font=font)
-                text_width = bbox[2] - bbox[0]
-            else:
-                text_width, _ = draw.textsize(guild_name, font=font)
-            
-            if text_width >= max_width or font_size >= max_font_size:
-                break
-            
-            font_size += 5
-            try:
-                font = ImageFont.truetype(font_path, font_size)
-            except:
-                break
+        # Position
+        # Adjust x, y according to blank space above guild ID
+        x = 250  # horizontal start (adjust to center)
+        y = 150  # vertical position above guild ID (adjust)
 
-        # Position (adjust vertical)
-        if isinstance(font, ImageFont.FreeTypeFont):
-            bbox = draw.textbbox((0,0), guild_name, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
-        else:
-            text_width, text_height = draw.textsize(guild_name, font=font)
-
-        x = (img.width - text_width) // 2
-        y = 180  # adjust vertical position to blank area
-
-        # Outline
+        # Black outline
         outline_range = 3
         for ox in range(-outline_range, outline_range+1):
             for oy in range(-outline_range, outline_range+1):
