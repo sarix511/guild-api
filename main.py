@@ -24,8 +24,8 @@ TEXT_AREA = {
 }
 
 # Fine-tune shifts
-VERTICAL_SHIFT_UP = -37  # 1 thumb downward (negative = lower in image)
-HORIZONTAL_SHIFT = 37    # ~1cm right
+VERTICAL_SHIFT_UP = -37   # 1 thumb downward (negative = lower in image)
+HORIZONTAL_SHIFT = 150    # 4cm right (~150 pixels)
 
 @app.get("/")
 def home():
@@ -65,7 +65,7 @@ async def generate(guild_name: str = Query(...)):
         # Horizontal center + right shift
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align + full thumb downward
+        # Vertical: bottom align + 1 thumb downward
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
