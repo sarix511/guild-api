@@ -24,7 +24,7 @@ TEXT_AREA = {
 }
 
 # Fine-tune shifts
-VERTICAL_SHIFT_UP = 5    # small gap below rectangle
+VERTICAL_SHIFT_UP = -37  # 1 thumb downward (negative = lower in image)
 HORIZONTAL_SHIFT = 37    # ~1cm right
 
 @app.get("/")
@@ -47,7 +47,7 @@ async def generate(guild_name: str = Query(...)):
         if not os.path.exists(font_path):
             return {"error": "Font file not found."}
 
-        font_size = 70
+        font_size = 75
         font = ImageFont.truetype(font_path, font_size)
         max_height = TEXT_AREA["height"]
 
@@ -62,10 +62,10 @@ async def generate(guild_name: str = Query(...)):
             font_size -= 2
             font = ImageFont.truetype(font_path, font_size)
 
-        # Horizontal center + fine-tune right shift
+        # Horizontal center + right shift
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align in rectangle, then shift slightly (small gap)
+        # Vertical: bottom align + full thumb downward
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
