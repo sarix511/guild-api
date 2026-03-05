@@ -24,8 +24,8 @@ TEXT_AREA = {
 }
 
 # Shifts
-VERTICAL_SHIFT_UP = -342    # 9 cm below rectangle (6cm + 3cm)
-HORIZONTAL_SHIFT = 226      # 6 cm right (4cm + 2cm)
+VERTICAL_SHIFT_UP = -399    # 9 cm + 1.5 cm extra below rectangle
+HORIZONTAL_SHIFT = 226      # 6 cm right
 TARGET_TEXT_HEIGHT = 90     # pixels
 
 @app.get("/")
@@ -66,7 +66,7 @@ async def generate(guild_name: str = Query(...)):
         # Horizontal center + 6 cm right
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align + 9 cm below
+        # Vertical: bottom align + adjusted shift
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
