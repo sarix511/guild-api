@@ -6,13 +6,21 @@ import requests, io
 
 app = FastAPI()
 
-# Allow all origins for browser / JS
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+# Blank area JSON
+BLANK_AREA = {
+    "x": 260,
+    "y": 930,
+    "width": 650,
+    "height": 80
+}
 
 @app.get("/generate")
 async def generate(guild_name: str = Query(...), guild_id: str = Query(...)):
@@ -25,28 +33,35 @@ async def generate(guild_name: str = Query(...), guild_id: str = Query(...)):
         draw = ImageDraw.Draw(img)
 
         # Font
-        font_size = 70  # Fixed large size
+        font_size = 70
         font_path = "fonts/arial.ttf"
         try:
             font = ImageFont.truetype(font_path, font_size)
         except:
             font = ImageFont.load_default()
 
-        # Position
-        # Adjust x, y according to blank space above guild ID
-        x = 250  # horizontal start (adjust to center)
-        y = 150  # vertical position above guild ID (adjust)
+        # Text size
+        if isinstance(font, ImageFont.FreeTypeFont):
+            bbox = draw.textbbox((0,0), guild_name, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+        else:
+            text_width, text_height = draw.textsize(guild_name, font=font)
 
-        # Black outline
+        # Center text in blank area
+        x = BLANK_AREA["x"] + (BLANK_AREA["width"] - text_width) // 2
+        y = BLANK_AREA["y"] + (BLANK_AREA["height"] - text_height) // 2
+
+        # Outline
         outline_range = 3
         for ox in range(-outline_range, outline_range+1):
             for oy in range(-outline_range, outline_range+1):
                 draw.text((x+ox, y+oy), guild_name, font=font, fill="black")
 
-        # White text
+        # White text on top
         draw.text((x, y), guild_name, font=font, fill="white")
 
-        # Return image
+        # Return as PNG
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
         img_bytes.seek(0)
