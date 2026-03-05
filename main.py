@@ -23,9 +23,9 @@ TEXT_AREA = {
     "height": 75
 }
 
-# Fine-tune shift
-VERTICAL_SHIFT_UP = 10  # smaller = lower text, bigger = higher
-HORIZONTAL_SHIFT = 5    # positive = move right, negative = move left
+# Fine-tune shifts
+VERTICAL_SHIFT_UP = 5    # small gap below rectangle
+HORIZONTAL_SHIFT = 37    # ~1cm right
 
 @app.get("/")
 def home():
@@ -65,7 +65,7 @@ async def generate(guild_name: str = Query(...)):
         # Horizontal center + fine-tune right shift
         x = TEXT_AREA["x"] + (TEXT_AREA["width"] - text_width) // 2 + HORIZONTAL_SHIFT
 
-        # Vertical: bottom align in rectangle, then shift UP slightly
+        # Vertical: bottom align in rectangle, then shift slightly (small gap)
         y = TEXT_AREA["y"] + TEXT_AREA["height"] - text_height - VERTICAL_SHIFT_UP
 
         # Draw outline
